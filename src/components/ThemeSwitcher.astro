@@ -1,0 +1,56 @@
+<button id="theme-switcher" type="button">
+  <div id="icon-theme-light">
+    <img src="/icons/sun.svg" class="h-6 hover:animate-spin" />
+    <span class="sr-only">Use light theme</span>
+  </div>
+  <div id="icon-theme-dark" class="hidden">
+    <img src="/icons/moon.svg" class="h-6 hover:animate-spin" />
+    <span class="sr-only">Use dark theme</span>
+  </div>
+</button>
+
+<script>
+  type Themes = "light" | "dark";
+
+  const button = document.querySelector("#theme-switcher");
+
+  // Get current theme
+  const theme = (): Themes => {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+      return localStorage.getItem("theme") as Themes;
+    }
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+    return "light";
+  };
+
+  // Get the alternate theme
+  const otherTheme = (currentTheme: Themes) =>
+    currentTheme === "dark" ? "light" : "dark";
+
+  // Change the icons
+  const updateIcon = (newTheme: Themes) => {
+    document.querySelector(`#icon-theme-${newTheme}`)?.classList.add("hidden");
+    document
+      .querySelector(`#icon-theme-${otherTheme(newTheme)}`)
+      ?.classList.remove("hidden");
+  };
+
+  // Set the theme to the provided theme
+  const setTheme = (theme: Themes) => {
+    if (theme === "light") {
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+    updateIcon(theme);
+    localStorage.setItem("theme", theme);
+  };
+
+  button.addEventListener("click", (e) => {
+    setTheme(otherTheme(theme()));
+  });
+
+  setTheme(theme());
+</script>

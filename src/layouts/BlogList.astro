@@ -1,0 +1,77 @@
+---
+import dayjs from "dayjs";
+import type { MarkdownInstance } from "astro";
+
+import BaseHead from "../components/BaseHead.astro";
+import Contribute from "../components/Contribute.astro";
+import Header from "../components/Header.astro";
+
+export interface Props {
+  title: string;
+  description: string;
+  posts: MarkdownInstance<Record<string, any>>[];
+}
+
+const { posts, title, description } = Astro.props;
+
+posts.sort((a, b) => dayjs(b.frontmatter.date) - dayjs(a.frontmatter.date));
+
+const groupedPosts = posts.reduce((acc, post) => {
+  const year = dayjs(post.frontmatter.date).year();
+  if (!acc[year]) {
+    acc[year] = [];
+  }
+  acc[year].push(post);
+  return acc;
+}, {});
+
+const groupedPostArray = Object.entries(groupedPosts).map(([year, posts]) => {
+  return { year, posts };
+});
+
+groupedPostArray.sort((a, b) => b.year - a.year);
+---
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <BaseHead title={title} description={description} />
+  </head>
+
+  <body class="dark:bg-neutral-900 px-4 md:px-0">
+    <Header />
+    <main class="max-w-2xl mx-auto my-8 sm:my-14">
+      <h1 class="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-4 sm:mb-10">{title}</h1>
+      <div
+        class="flex flex-col divide-y dark:divide-neutral-800 divide-neutral-500 border-t border-b dark:border-neutral-800 border-neutral-500"
+      >
+        {
+          groupedPostArray.map((group) => (
+            <div class="flex">
+              <h2 class="text-sm text-neutral-400 dark:text-neutral-500 py-3">
+                {group.year}
+              </h2>
+              <div class="ml-6 sm:ml-36 flex flex-col w-full divide-y dark:divide-neutral-800 divide-neutral-500">
+                {group.posts.map((post) => (
+                  <a
+                    href={post.url}
+                    class="dark:text-neutral-300 text-neutral-800 font-medium py-3 flex flex-row justify-between hover:text-neutral-400 dark:hover:bg-transparent dark:hover:opacity-60"
+                  >
+                    <span> {post.frontmatter.title} </span>
+                    <span class="text-neutral-400 dark:text-neutral-500 text-sm">
+                      {" "}
+                      {!post.frontmatter.hideDate && dayjs(post.frontmatter.date).format("DD/MM")}{" "}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </main>
+    <footer class="max-w-3xl mx-auto mb-10">
+      <Contribute />
+    </footer>
+  </body>
+</html>

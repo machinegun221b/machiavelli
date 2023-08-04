@@ -1,0 +1,7 @@
+---
+import BlogList from "../layouts/BlogList.astro";
+
+const posts = await Astro.glob("../pages/blogs/*.md");
+---
+
+<BlogList posts={posts} title="Speak Your Mind" description="Speak Your Mind Home Page"/>
